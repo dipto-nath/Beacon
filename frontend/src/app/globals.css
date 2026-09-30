@@ -1,0 +1,302 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  /* Warm off-white background */
+  --background: #FAFAF8;
+  --card: #FFFFFF;
+  --surface-subtle: #F4F4F2;
+  --border: #E4E4E2;
+  --border-subtle: #ECECEA;
+
+  /* Text hierarchy */
+  --text-primary: #18181B;
+  --text-secondary: #52525B;
+  --text-muted: #A1A1AA;
+  --text-caption: #D4D4D8;
+
+  /* Primary — deep navy */
+  --primary: #1E3A5F;
+  --primary-hover: #16304F;
+  --primary-light: #EEF3F9;
+  --primary-border: #C5D6E9;
+
+  /* Accent — teal */
+  --teal: #0D9488;
+  --teal-light: #F0FDFA;
+  --teal-border: #99F6E4;
+
+  /* Sage */
+  --sage: #4D7C5E;
+  --sage-light: #F0F7F2;
+
+  /* Amber */
+  --amber: #B45309;
+  --amber-light: #FFFBEB;
+  --amber-border: #FDE68A;
+
+  /* Muted red — urgent only */
+  --danger: #B91C1C;
+  --danger-light: #FEF2F2;
+  --danger-border: #FCA5A5;
+
+  /* Mood states */
+  --mood-very-good: #0D9488;
+  --mood-good: #4D7C5E;
+  --mood-okay: #B45309;
+  --mood-difficult: #C2410C;
+  --mood-very-difficult: #B91C1C;
+
+  /* UI */
+  --sidebar-width: 240px;
+  --header-height: 60px;
+  --radius: 8px;
+  --radius-sm: 6px;
+  --radius-lg: 12px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--text-primary);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100%;
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Smooth transitions by default */
+.transition-base {
+  transition: all 0.15s ease;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Typography utilities */
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Chart tooltip */
+.recharts-tooltip-wrapper {
+  border-radius: var(--radius) !important;
+}
+
+/* Beacon component classes */
+.beacon-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.beacon-card-sm {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.beacon-surface {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+/* Sidebar */
+.beacon-sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Status badge */
+.status-new { background: #EEF3F9; color: #1E3A5F; }
+.status-reviewing { background: #FFFBEB; color: #B45309; }
+.status-contacted { background: #F0FDFA; color: #0D9488; }
+.status-scheduled { background: #F0F7F2; color: #4D7C5E; }
+.status-resolved { background: #F4F4F2; color: #52525B; }
+
+/* AI insight badge */
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  letter-spacing: 0.01em;
+}
+
+/* Privacy badge */
+.privacy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--sage);
+  background: var(--sage-light);
+  border: 1px solid #C6DFCC;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+/* Mood indicator dots */
+.mood-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Skeleton loader */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-subtle) 0%,
+    var(--border) 50%,
+    var(--surface-subtle) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* Page enter animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: fadeInUp 0.2s ease forwards;
+}
+
+/* Mood selector item */
+.mood-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 10px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex: 1;
+  text-align: center;
+}
+
+.mood-option:hover {
+  border-color: var(--primary-border);
+  background: var(--primary-light);
+}
+
+.mood-option.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+/* Number-free mood indicator shapes */
+.mood-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Support level indicator */
+.support-level-self {
+  color: var(--sage);
+  background: var(--sage-light);
+  border: 1px solid #C6DFCC;
+}
+.support-level-additional {
+  color: var(--amber);
+  background: var(--amber-light);
+  border: 1px solid var(--amber-border);
+}
+.support-level-counselor {
+  color: var(--primary);
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+}
+.support-level-urgent {
+  color: var(--danger);
+  background: var(--danger-light);
+  border: 1px solid var(--danger-border);
+}
