@@ -15,11 +15,21 @@ from sqlalchemy import (
     Index,
     String,
     Text,
+    JSON,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base
+from app.database import Base, is_sqlite
+
+
+# Use JSON for SQLite, ARRAY for PostgreSQL
+if is_sqlite:
+    from sqlalchemy import JSON
+    ArrayType = JSON
+else:
+    from sqlalchemy.dialects.postgresql import ARRAY
+    ArrayType = ARRAY
 
 
 class CounselingRequestStatus(str, enum.Enum):
@@ -50,7 +60,7 @@ class CounselingRequest(Base):
     student_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     preferred_mode: Mapped[SessionMode] = mapped_column(Enum(SessionMode), default=SessionMode.EITHER, nullable=False)
-    preferred_times: Mapped[List[str]] = mapped_column(ARRAY(String), default=list, nullable=False)  # ISO datetime strings
+    preferred_times: Mapped[List[str]] = mapped_column(ArrayType, default=list, nullable=False)  # ISO datetime strings
     reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Encrypted
     status: Mapped[CounselingRequestStatus] = mapped_column(Enum(CounselingRequestStatus), default=CounselingRequestStatus.PENDING, nullable=False)
     assigned_counselor_id: Mapped[Optional[UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)

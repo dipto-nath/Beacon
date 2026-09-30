@@ -34,7 +34,7 @@ class Settings(BaseSettings):
         return async_url.replace("postgresql+asyncpg://", "postgresql://")
 
     # ─── Redis ────────────────────────────────────────────────────
-    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_URL: Optional[str] = None
 
     # ─── JWT Authentication ───────────────────────────────────────
     JWT_SECRET_KEY: str
@@ -103,8 +103,8 @@ class Settings(BaseSettings):
     RATE_LIMIT_API_WINDOW: int = 60
 
     # ─── Celery ───────────────────────────────────────────────────
-    CELERY_BROKER_URL: str = "redis://localhost:6379/1"
-    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/2"
+    CELERY_BROKER_URL: Optional[str] = None
+    CELERY_RESULT_BACKEND: Optional[str] = None
     CELERY_TASK_SERIALIZER: str = "json"
     CELERY_RESULT_SERIALIZER: str = "json"
     CELERY_ACCEPT_CONTENT: str = "json"

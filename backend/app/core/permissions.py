@@ -73,9 +73,14 @@ ROLE_PERMISSIONS: Dict[Role, Set[Permission]] = {
     },
     Role.ADMIN: {
         Permission.MANAGE_USERS, Permission.VIEW_AUDIT_LOGS, Permission.SYSTEM_CONFIG,
-        *{p for perms in ROLE_PERMISSIONS.values() for p in perms},
     },
 }
+
+# Grant ADMIN all permissions from every other role
+_all_non_admin_perms: Set[Permission] = {
+    p for role, perms in ROLE_PERMISSIONS.items() if role != Role.ADMIN for p in perms
+}
+ROLE_PERMISSIONS[Role.ADMIN] = ROLE_PERMISSIONS[Role.ADMIN] | _all_non_admin_perms
 
 def get_permissions_for_role(role: Role) -> Set[Permission]:
     return ROLE_PERMISSIONS.get(role, set())

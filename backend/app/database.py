@@ -22,15 +22,30 @@ class Base(DeclarativeBase):
     pass
 
 
-# Create async engine
-engine: AsyncEngine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.DEBUG,
-    poolclass=NullPool if settings.ENVIRONMENT == "test" else None,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
-)
+# Create async engine - handle SQLite vs PostgreSQL
+database_url = settings.DATABASE_URL
+is_sqlite = database_url.startswith("sqlite")
+
+if is_sqlite:
+    # SQLite doesn't support pool settings
+    engine: AsyncEngine = create_async_engine(
+        database_url,
+        echo=settings.DEBUG,
+        connect_args={"check_same_thread": False},
+    )
+else:
+    # PostgreSQL with connection pooling
+    engine: AsyncEngine = create_async_engine(
+        database_url,
+        echo=settings.DEBUG,
+        poolclass=NullPool if settings.ENVIRONMENT == "test" else None,
+        pool_pre_ping=True,
+        pool_size=10,
+        max_overflow=20,
+    )
+
+# Export is_sqlite for models to use
+__all__ = ["engine", "async_session_maker", "Base", "get_session", "get_session_context", "init_db", "close_db", "is_sqlite"]
 
 # Session factory
 async_session_maker = async_sessionmaker(

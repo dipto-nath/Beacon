@@ -1,3 +1,49 @@
+"""
+Authentication router — register, login, refresh, logout, SSO.
+"""
+from datetime import datetime, timezone
+from typing import Optional
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database import get_session
+from app.config import settings
+from app.core.exceptions import (
+    AlreadyExistsError,
+    InvalidCredentialsError,
+    TokenInvalidError,
+    RefreshTokenRequiredError,
+)
+from app.core.security import (
+    hash_password,
+    verify_password,
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    blacklist_token,
+    hash_student_id,
+)
+from app.models.user import User, UserRole
+from app.schemas.auth import (
+    RegisterRequest,
+    LoginRequest,
+    LoginResponse,
+    Token,
+    RefreshTokenRequest,
+    UserResponse,
+    UserProfileResponse,
+    PasswordChangeRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+    SSOLoginResponse,
+)
+
+router = APIRouter()
+
+
 # ─── Dependencies ────────────────────────────────────────────────
 
 async def get_current_user(

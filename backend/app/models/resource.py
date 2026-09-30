@@ -16,11 +16,21 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    JSON,
 )
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base
+from app.database import Base, is_sqlite
+
+
+# Use JSON for SQLite, ARRAY for PostgreSQL
+if is_sqlite:
+    from sqlalchemy import JSON
+    ArrayType = JSON
+else:
+    from sqlalchemy.dialects.postgresql import ARRAY
+    ArrayType = ARRAY
 
 
 class ResourceCategory(str, enum.Enum):
@@ -58,7 +68,7 @@ class Resource(Base):
     published_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     view_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    tags: Mapped[List[str]] = mapped_column(ARRAY(String), default=list, nullable=False)
+    tags: Mapped[List[str]] = mapped_column(ArrayType, default=list, nullable=False)
     created_by: Mapped[Optional[UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

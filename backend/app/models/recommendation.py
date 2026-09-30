@@ -15,11 +15,21 @@ from sqlalchemy import (
     Index,
     String,
     Text,
+    JSON,
 )
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base
+from app.database import Base, is_sqlite
+
+
+# Use JSON for SQLite, ARRAY for PostgreSQL
+if is_sqlite:
+    from sqlalchemy import JSON
+    ArrayType = JSON
+else:
+    from sqlalchemy.dialects.postgresql import ARRAY
+    ArrayType = ARRAY
 
 
 class RecommendationType(str, enum.Enum):
@@ -47,7 +57,7 @@ class Recommendation(Base):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     source: Mapped[RecommendationSource] = mapped_column(Enum(RecommendationSource), default=RecommendationSource.RULE_BASED, nullable=False)
-    tags: Mapped[List[str]] = mapped_column(ARRAY(String), default=list, nullable=False)
+    tags: Mapped[List[str]] = mapped_column(ArrayType, default=list, nullable=False)
     resource_id: Mapped[Optional[UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("resources.id"), nullable=True)
     dismissed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     clicked: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

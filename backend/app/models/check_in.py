@@ -2,6 +2,7 @@
 Check-in and mood models.
 """
 import enum
+import json
 from typing import Optional
 from datetime import datetime
 from typing import List, Optional
@@ -15,11 +16,21 @@ from sqlalchemy import (
     Index,
     String,
     Text,
+    JSON,
 )
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base
+from app.database import Base, is_sqlite
+
+
+# Use JSON for SQLite, ARRAY for PostgreSQL
+if is_sqlite:
+    from sqlalchemy import JSON
+    ArrayType = JSON
+else:
+    from sqlalchemy.dialects.postgresql import ARRAY
+    ArrayType = ARRAY
 
 
 class MoodLevel(str, enum.Enum):
@@ -80,7 +91,7 @@ class CheckIn(Base):
     stress: Mapped[StressLevel] = mapped_column(Enum(StressLevel), nullable=False)
     energy: Mapped[EnergyLevel] = mapped_column(Enum(EnergyLevel), nullable=False)
     sleep: Mapped[SleepQuality] = mapped_column(Enum(SleepQuality), nullable=False)
-    tags: Mapped[List[CheckInTag]] = mapped_column(ARRAY(Enum(CheckInTag)), default=list, nullable=False)
+    tags: Mapped[List[CheckInTag]] = mapped_column(ArrayType, default=list, nullable=False)
     note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     support_level: Mapped[SupportLevel] = mapped_column(Enum(SupportLevel), nullable=False)
     distress_score: Mapped[Optional[float]] = mapped_column(nullable=True)  # INTERNAL ONLY - never exposed to students
@@ -113,7 +124,7 @@ class MoodEntry(Base):
     check_in_count: Mapped[int] = mapped_column(default=0, nullable=False)
     sleep_rating: Mapped[Optional[float]] = mapped_column(nullable=True)
     energy_rating: Mapped[Optional[float]] = mapped_column(nullable=True)
-    top_tags: Mapped[List[str]] = mapped_column(ARRAY(String), default=list, nullable=False)
+    top_tags: Mapped[List[str]] = mapped_column(ArrayType, default=list, nullable=False)
 
     # Relationships
     student: Mapped["User"] = relationship("User", back_populates="mood_entries")
