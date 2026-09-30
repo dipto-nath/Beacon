@@ -5,7 +5,7 @@ import enum
 from typing import Optional
 from datetime import datetime
 from typing import Dict, Any, List, Optional
-from uuid import uuid4
+from uuid import uuid4, UUID as PyUUID
 
 from sqlalchemy import (
     Boolean,
@@ -17,7 +17,8 @@ from sqlalchemy import (
     Text,
     JSON,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base, is_sqlite
@@ -56,15 +57,15 @@ class AppointmentStatus(str, enum.Enum):
 class CounselingRequest(Base):
     __tablename__ = "counseling_requests"
 
-    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    student_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    student_id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     preferred_mode: Mapped[SessionMode] = mapped_column(Enum(SessionMode), default=SessionMode.EITHER, nullable=False)
     preferred_times: Mapped[List[str]] = mapped_column(ArrayType, default=list, nullable=False)  # ISO datetime strings
     reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Encrypted
     status: Mapped[CounselingRequestStatus] = mapped_column(Enum(CounselingRequestStatus), default=CounselingRequestStatus.PENDING, nullable=False)
-    assigned_counselor_id: Mapped[Optional[UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    appointment_id: Mapped[Optional[UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("appointments.id"), nullable=True)
+    assigned_counselor_id: Mapped[Optional[PyUUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    appointment_id: Mapped[Optional[PyUUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("appointments.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
@@ -85,9 +86,9 @@ class CounselingRequest(Base):
 class Appointment(Base):
     __tablename__ = "appointments"
 
-    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    counselor_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
-    student_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    counselor_id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    student_id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     scheduled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     duration_minutes: Mapped[int] = mapped_column(default=50, nullable=False)
     mode: Mapped[SessionMode] = mapped_column(Enum(SessionMode), nullable=False)

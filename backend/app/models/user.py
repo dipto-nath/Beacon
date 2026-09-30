@@ -4,7 +4,7 @@ User model with field-level encryption for PII.
 import enum
 from datetime import datetime
 from typing import Optional
-from uuid import uuid4
+from uuid import uuid4, UUID as PyUUID
 
 from sqlalchemy import (
     Boolean,
@@ -32,7 +32,7 @@ class UserRole(str, enum.Enum):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     student_id_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
     first_name: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -40,7 +40,7 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.STUDENT, nullable=False)
     program: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     year_of_study: Mapped[Optional[int]] = mapped_column(nullable=True)
-    university_id: Mapped[Optional[UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("universities.id"), nullable=True)
+    university_id: Mapped[Optional[PyUUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("universities.id"), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     password_hash: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
@@ -53,11 +53,11 @@ class User(Base):
 
     # Relationships
     check_ins: Mapped[list["CheckIn"]] = relationship("CheckIn", back_populates="student", lazy="dynamic")
-    assessments: Mapped[list["Assessment"]] = relationship("Assessment", back_populates="student", lazy="dynamic")
+    assessments: Mapped[list["Assessment"]] = relationship("Assessment", back_populates="student", lazy="dynamic", foreign_keys="Assessment.student_id")
     mood_entries: Mapped[list["MoodEntry"]] = relationship("MoodEntry", back_populates="student", lazy="dynamic")
     recommendations: Mapped[list["Recommendation"]] = relationship("Recommendation", back_populates="student", lazy="dynamic")
-    counseling_requests: Mapped[list["CounselingRequest"]] = relationship("CounselingRequest", back_populates="student", lazy="dynamic")
-    appointments: Mapped[list["Appointment"]] = relationship("Appointment", back_populates="student", lazy="dynamic")
+    counseling_requests: Mapped[list["CounselingRequest"]] = relationship("CounselingRequest", back_populates="student", lazy="dynamic", foreign_keys="CounselingRequest.student_id")
+    appointments: Mapped[list["Appointment"]] = relationship("Appointment", back_populates="student", lazy="dynamic", foreign_keys="Appointment.student_id")
     consent_records: Mapped[list["ConsentRecord"]] = relationship("ConsentRecord", back_populates="student", lazy="dynamic")
     audit_logs: Mapped[list["AuditLog"]] = relationship("AuditLog", back_populates="actor", lazy="dynamic")
 

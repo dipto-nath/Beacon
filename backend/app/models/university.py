@@ -3,7 +3,7 @@ University model for multi-tenancy support.
 """
 from typing import Optional
 from datetime import datetime
-from uuid import uuid4
+from uuid import uuid4, UUID as PyUUID
 
 from sqlalchemy import (
     Boolean,
@@ -21,7 +21,7 @@ from app.database import Base
 class University(Base):
     __tablename__ = "universities"
 
-    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     slug: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     domain: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)  # e.g., ashford.ac.uk

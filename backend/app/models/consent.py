@@ -3,7 +3,7 @@ Consent record model for GDPR compliance.
 """
 from datetime import datetime
 from typing import Optional
-from uuid import uuid4
+from uuid import uuid4, UUID as PyUUID
 
 from sqlalchemy import (
     Boolean,
@@ -21,8 +21,8 @@ from app.database import Base
 class ConsentRecord(Base):
     __tablename__ = "consent_records"
 
-    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    student_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    student_id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     version: Mapped[str] = mapped_column(String(20), nullable=False)
     given_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     ip_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)

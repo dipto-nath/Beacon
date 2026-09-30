@@ -6,7 +6,7 @@ import json
 from typing import Optional
 from datetime import datetime
 from typing import List, Optional
-from uuid import uuid4
+from uuid import uuid4, UUID as PyUUID
 
 from sqlalchemy import (
     Boolean,
@@ -84,8 +84,8 @@ class CheckInTag(str, enum.Enum):
 class CheckIn(Base):
     __tablename__ = "check_ins"
 
-    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    student_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    student_id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     mood: Mapped[MoodLevel] = mapped_column(Enum(MoodLevel), nullable=False)
     stress: Mapped[StressLevel] = mapped_column(Enum(StressLevel), nullable=False)
@@ -116,8 +116,8 @@ class MoodEntry(Base):
     """Denormalized daily mood aggregate for fast analytics."""
     __tablename__ = "mood_entries"
 
-    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    student_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    student_id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     avg_mood_score: Mapped[float] = mapped_column(nullable=False)
     avg_stress_score: Mapped[float] = mapped_column(nullable=False)

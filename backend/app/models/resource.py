@@ -5,7 +5,7 @@ import enum
 from typing import Optional
 from datetime import datetime
 from typing import List, Optional
-from uuid import uuid4
+from uuid import uuid4, UUID as PyUUID
 
 from sqlalchemy import (
     Boolean,
@@ -56,7 +56,7 @@ class ResourceType(str, enum.Enum):
 class Resource(Base):
     __tablename__ = "resources"
 
-    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     slug: Mapped[str] = mapped_column(String(220), unique=True, nullable=False, index=True)
     category: Mapped[ResourceCategory] = mapped_column(Enum(ResourceCategory), nullable=False)
@@ -69,7 +69,7 @@ class Resource(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     view_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     tags: Mapped[List[str]] = mapped_column(ArrayType, default=list, nullable=False)
-    created_by: Mapped[Optional[UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    created_by: Mapped[Optional[PyUUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 

@@ -5,7 +5,7 @@ import enum
 from typing import Optional
 from datetime import datetime
 from typing import List, Optional
-from uuid import uuid4
+from uuid import uuid4, UUID as PyUUID
 
 from sqlalchemy import (
     Boolean,
@@ -49,8 +49,8 @@ class RecommendationSource(str, enum.Enum):
 class Recommendation(Base):
     __tablename__ = "recommendations"
 
-    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    student_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    student_id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     type: Mapped[RecommendationType] = mapped_column(Enum(RecommendationType), nullable=False)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
@@ -58,7 +58,7 @@ class Recommendation(Base):
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     source: Mapped[RecommendationSource] = mapped_column(Enum(RecommendationSource), default=RecommendationSource.RULE_BASED, nullable=False)
     tags: Mapped[List[str]] = mapped_column(ArrayType, default=list, nullable=False)
-    resource_id: Mapped[Optional[UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("resources.id"), nullable=True)
+    resource_id: Mapped[Optional[PyUUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("resources.id"), nullable=True)
     dismissed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     clicked: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

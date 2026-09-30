@@ -5,7 +5,7 @@ import enum
 from typing import Optional
 from datetime import datetime
 from typing import Dict, Any, Optional
-from uuid import uuid4
+from uuid import uuid4, UUID as PyUUID
 
 from sqlalchemy import (
     Boolean,
@@ -16,7 +16,8 @@ from sqlalchemy import (
     Integer,
     String,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -31,24 +32,24 @@ class SnapshotPeriod(str, enum.Enum):
 class CampusSnapshot(Base):
     __tablename__ = "campus_snapshots"
 
-    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     snapshot_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    university_id: Mapped[Optional[UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("universities.id"), nullable=True)
+    university_id: Mapped[Optional[PyUUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("universities.id"), nullable=True)
     period: Mapped[SnapshotPeriod] = mapped_column(Enum(SnapshotPeriod), nullable=False)
 
     total_check_ins: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     unique_students_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     avg_mood_score: Mapped[Optional[float]] = mapped_column(nullable=True)
     avg_stress_score: Mapped[Optional[float]] = mapped_column(nullable=True)
-    stress_distribution: Mapped[Dict[str, int]] = mapped_column(JSONB, default=dict, nullable=False)
+    stress_distribution: Mapped[Dict[str, int]] = mapped_column(JSON, default=dict, nullable=False)
     counseling_request_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     escalation_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    top_factors: Mapped[Dict[str, int]] = mapped_column(JSONB, default=dict, nullable=False)
+    top_factors: Mapped[Dict[str, int]] = mapped_column(JSON, default=dict, nullable=False)
     resource_engagement_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     min_group_size_met: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Time-series data for trends
-    trends_data: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict, nullable=False)
+    trends_data: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
