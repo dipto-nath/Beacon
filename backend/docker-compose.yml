@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: beacon-postgres
+    environment:
+      POSTGRES_USER: beacon
+      POSTGRES_PASSWORD: beacon
+      POSTGRES_DB: beacon
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U beacon -d beacon"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: beacon-redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: beacon-backend
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://beacon:beacon@postgres:5432/beacon
+      - DATABASE_URL_SYNC=postgresql://beacon:beacon@postgres:5432/beacon
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=your-super-secret-jwt-key-min-64-chars-long-change-in-production
+      - FIELD_ENCRYPTION_KEY=base64-encoded-32-byte-key-here
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - LOG_LEVEL=INFO
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./app:/app/app
+      - ./alembic:/app/alembic
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: beacon-celery-worker
+    command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=4
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://beacon:beacon@postgres:5432/beacon
+      - DATABASE_URL_SYNC=postgresql://beacon:beacon@postgres:5432/beacon
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=your-super-secret-jwt-key-min-64-chars-long-change-in-production
+      - FIELD_ENCRYPTION_KEY=base64-encoded-32-byte-key-here
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - LOG_LEVEL=INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./app:/app/app
+      - ./alembic:/app/alembic
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: beacon-celery-beat
+    command: celery -A app.tasks.celery_app beat --loglevel=info --schedule=/app/celerybeat-schedule
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://beacon:beacon@postgres:5432/beacon
+      - DATABASE_URL_SYNC=postgresql://beacon:beacon@postgres:5432/beacon
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=your-super-secret-jwt-key-min-64-chars-long-change-in-production
+      - FIELD_ENCRYPTION_KEY=base64-encoded-32-byte-key-here
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - LOG_LEVEL=INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./app:/app/app
+      - ./alembic:/app/alembic
+      - celery_beat_data:/app
+
+  flower:
+    image: mher/flower:2.0.1
+    container_name: beacon-flower
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - FLOWER_PORT=5555
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - celery-worker
+
+volumes:
+  postgres_data:
+  redis_data:
+  celery_beat_data:
