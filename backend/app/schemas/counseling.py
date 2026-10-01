@@ -55,6 +55,7 @@ class AppointmentResponse(BaseModel):
     counselor_id: UUID
     counselor_name: str
     student_id: UUID
+    student_name: Optional[str] = None
     date: datetime
     time: str
     duration: int

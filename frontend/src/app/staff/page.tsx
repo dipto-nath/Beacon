@@ -1,17 +1,53 @@
-import type { Metadata } from 'next';
+'use client';
+
 import { AppLayout } from '@/components/shared/AppLayout';
 import { MetricCard } from '@/components/ui/Card';
 import { SupportQueue } from '@/components/staff/SupportQueue';
 import { StressDistributionChart, TrendAreaChart } from '@/components/charts/StaffCharts';
-import { campusAnalytics, supportCases } from '@/data/mock';
 import { Info } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-
-export const metadata: Metadata = { title: 'Staff Overview | Beacon' };
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function StaffOverviewPage() {
-  const a = campusAnalytics;
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && (!user || (user.role !== 'counselor' && user.role !== 'wellbeing_admin'))) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  const { data: analytics, isLoading: analyticsLoading } = useQuery({
+    queryKey: ['staffAnalytics'],
+    queryFn: async () => {
+      const res = await api.get('/staff/analytics/overview');
+      return res.data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: queueData, isLoading: queueLoading } = useQuery({
+    queryKey: ['staffCases'],
+    queryFn: async () => {
+      const res = await api.get('/staff/cases');
+      return res.data;
+    },
+    enabled: !!user,
+  });
+
+  if (loading || analyticsLoading || queueLoading) {
+    return <div className="p-8">Loading...</div>;
+  }
+
+  if (!analytics) return null;
+  const a = analytics;
+  const supportCases = queueData?.data || [];
 
   return (
     <AppLayout variant="staff">
@@ -24,9 +60,9 @@ export default function StaffOverviewPage() {
               </span>
             </div>
             <h1 className="text-[22px] font-semibold text-[var(--text-primary)]">
-              Student Well-being Overview
+              Welcome, {user?.first_name}
             </h1>
-            <p className="text-[14px] text-[var(--text-muted)] mt-1">{a.period}</p>
+            <p className="text-[14px] text-[var(--text-muted)] mt-1">Overview</p>
           </div>
           <Link href="/staff/support">
             <Button size="sm">View support queue</Button>
@@ -49,30 +85,30 @@ export default function StaffOverviewPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <MetricCard
             label="Check-ins"
-            value={a.totalCheckIns.toLocaleString()}
+            value={a.total_check_ins.toLocaleString()}
             subvalue="this month"
             className="col-span-1"
           />
           <MetricCard
             label="Students"
-            value={a.uniqueStudents.toLocaleString()}
+            value={a.unique_students.toLocaleString()}
             subvalue="engaged"
           />
           <MetricCard
             label="Avg. stress"
-            value="Moderate"
+            value={a.average_stress || "Moderate"}
             subvalue="campus-wide"
           />
           <MetricCard
             label="Counseling requests"
-            value={a.counselingRequests}
+            value={a.counseling_requests}
             subvalue="this month"
             trend="up"
             trendLabel="vs. last month"
           />
           <MetricCard
             label="Resource views"
-            value={a.resourceEngagement.toLocaleString()}
+            value={a.resource_engagement.toLocaleString()}
           />
           <MetricCard
             label="Escalations"
@@ -91,7 +127,7 @@ export default function StaffOverviewPage() {
             <h2 className="text-[14px] font-semibold text-[var(--text-primary)] mb-3">
               Check-ins over time
             </h2>
-            <TrendAreaChart data={a.trendsData} metric="checkIns" />
+            <TrendAreaChart data={a.trends.data} metric="checkIns" />
           </section>
 
           {/* Stress distribution */}
@@ -102,7 +138,7 @@ export default function StaffOverviewPage() {
             <h2 className="text-[14px] font-semibold text-[var(--text-primary)] mb-3">
               Stress distribution
             </h2>
-            <StressDistributionChart distribution={a.stressDistribution} />
+            <StressDistributionChart distribution={a.stress_distribution} />
             <p className="text-[11px] text-[var(--text-muted)] mt-3">
               Percentage of students reporting each stress level in the current period.
             </p>

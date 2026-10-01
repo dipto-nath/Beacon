@@ -1,10 +1,13 @@
-import type { Metadata } from 'next';
+'use client';
+
 import { AppLayout } from '@/components/shared/AppLayout';
 import { SupportQueue } from '@/components/staff/SupportQueue';
-import { supportCases } from '@/data/mock';
 import { Info } from 'lucide-react';
-
-export const metadata: Metadata = { title: 'Support Queue | Beacon Staff' };
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 const statusGroups = [
   { label: 'Urgent', statuses: ['new', 'reviewing', 'contacted'] as const, description: 'Requires attention' },
@@ -13,6 +16,34 @@ const statusGroups = [
 ];
 
 export default function StaffSupportPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && (!user || (user.role !== 'counselor' && user.role !== 'wellbeing_admin'))) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  const { data: queueData, isLoading: queueLoading } = useQuery({
+    queryKey: ['staffCases'],
+    queryFn: async () => {
+      const res = await api.get('/staff/cases');
+      return res.data;
+    },
+    enabled: !!user,
+  });
+
+  if (loading || queueLoading) {
+    return (
+      <AppLayout variant="staff">
+        <div className="p-8">Loading...</div>
+      </AppLayout>
+    );
+  }
+
+  const supportCases = queueData?.data || [];
+
   return (
     <AppLayout variant="staff">
       <div className="max-w-2xl space-y-6">
@@ -37,19 +68,19 @@ export default function StaffSupportPage() {
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-white border border-[var(--danger-border)] rounded-lg px-3 py-2.5 text-center">
             <p className="text-xl font-bold text-[var(--danger)]">
-              {supportCases.filter((c) => ['new', 'reviewing', 'contacted'].includes(c.status)).length}
+              {supportCases.filter((c: any) => ['new', 'reviewing', 'contacted'].includes(c.status)).length}
             </p>
             <p className="text-[11px] text-[var(--text-muted)] mt-0.5">Active</p>
           </div>
           <div className="bg-white border border-[var(--border)] rounded-lg px-3 py-2.5 text-center">
             <p className="text-xl font-bold text-[var(--sage)]">
-              {supportCases.filter((c) => c.status === 'scheduled').length}
+              {supportCases.filter((c: any) => c.status === 'scheduled').length}
             </p>
             <p className="text-[11px] text-[var(--text-muted)] mt-0.5">Scheduled</p>
           </div>
           <div className="bg-white border border-[var(--border)] rounded-lg px-3 py-2.5 text-center">
             <p className="text-xl font-bold text-[var(--text-muted)]">
-              {supportCases.filter((c) => c.status === 'resolved').length}
+              {supportCases.filter((c: any) => c.status === 'resolved').length}
             </p>
             <p className="text-[11px] text-[var(--text-muted)] mt-0.5">Resolved</p>
           </div>

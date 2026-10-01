@@ -28,8 +28,12 @@ async def get_appointments(
     current_user=Depends(require_permission(Permission.VIEW_OWN_APPOINTMENTS)),
     session: AsyncSession = Depends(get_session),
 ):
-    """Get own appointments."""
-    query = select(Appointment).where(Appointment.student_id == current_user.id)
+    """Get own appointments (student or counselor)."""
+    query = select(Appointment)
+    if current_user.role == "counselor":
+        query = query.where(Appointment.counselor_id == current_user.id)
+    else:
+        query = query.where(Appointment.student_id == current_user.id)
 
     if status_filter:
         query = query.where(Appointment.status == status_filter)
@@ -41,15 +45,17 @@ async def get_appointments(
     result = await session.execute(query)
     appointments = result.scalars().all()
 
-    # Build response with counselor names
+    # Build response with names
     data = []
     for appt in appointments:
         counselor = await session.get(Appointment.counselor.property.mapper.class_, appt.counselor_id)
+        student = await session.get(Appointment.student.property.mapper.class_, appt.student_id)
         data.append(AppointmentResponse(
             id=appt.id,
             counselor_id=appt.counselor_id,
             counselor_name=f"{counselor.first_name} {counselor.last_name}" if counselor else "Unknown",
             student_id=appt.student_id,
+            student_name=f"{student.first_name} {student.last_name}" if student else "Unknown",
             date=appt.scheduled_at,
             time=appt.scheduled_at.strftime("%H:%M"),
             duration=appt.duration_minutes,
