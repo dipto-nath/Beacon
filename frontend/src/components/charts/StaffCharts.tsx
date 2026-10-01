@@ -24,10 +24,10 @@ interface TrendChartProps {
 }
 
 const metricConfig = {
-  check_ins: { label: 'Check-ins', color: '#1E3A5F' },
-  avg_mood: { label: 'Average mood', color: '#0D9488' },
-  stress_avg: { label: 'Stress level', color: '#B45309' },
-  counseling_requests: { label: 'Counseling requests', color: '#4D7C5E' },
+  check_ins:             { label: 'Check-ins',            color: '#3B7CE4' },
+  avg_mood:              { label: 'Average mood',         color: '#27B5A0' },
+  stress_avg:            { label: 'Stress level',         color: '#D4820A' },
+  counseling_requests:   { label: 'Counseling requests',  color: '#7B8FD4' },
 };
 
 function CustomTooltip({ active, payload, label }: {
@@ -60,7 +60,7 @@ export function TrendAreaChart({ data, metric }: TrendChartProps) {
       <AreaChart data={displayData} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
         <defs>
           <linearGradient id={`grad-${metric}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={config.color} stopOpacity={0.1} />
+            <stop offset="5%" stopColor={config.color} stopOpacity={0.18} />
             <stop offset="95%" stopColor={config.color} stopOpacity={0} />
           </linearGradient>
         </defs>
@@ -97,7 +97,7 @@ interface StressDistributionChartProps {
   distribution: CampusAnalytics['stressDistribution'];
 }
 
-const STRESS_COLORS = ['#4D7C5E', '#B45309', '#C2410C', '#B91C1C'];
+const STRESS_COLORS = ['#27B5A0', '#3B7CE4', '#D4820A', '#E05252'];
 const STRESS_LABELS = ['Low', 'Moderate', 'Elevated', 'High'];
 
 export function StressDistributionChart({ distribution }: StressDistributionChartProps) {
@@ -175,7 +175,7 @@ export function TopFactorsChart({ factors }: TopFactorsChartProps) {
           width={110}
         />
         <Tooltip content={<CustomTooltip />} />
-        <Bar dataKey="count" name="Reports" fill="#1E3A5F" radius={[0, 3, 3, 0]} barSize={12} />
+        <Bar dataKey="count" name="Reports" fill="#3B7CE4" radius={[0, 4, 4, 0]} barSize={10} />
       </BarChart>
     </ResponsiveContainer>
   );

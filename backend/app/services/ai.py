@@ -15,7 +15,9 @@ def generate_insight_from_checkins(check_ins: List[CheckIn]) -> str:
     # Format the data for the LLM
     data_str = "Recent Check-ins:\n"
     for ci in check_ins:
-        data_str += f"- Date: {ci.completed_at.strftime('%Y-%m-%d')}, Mood: {ci.mood.value}, Stress: {ci.stress.value}, Sleep: {ci.sleep.value}, Tags: {','.join([t.value for t in ci.tags])}\n"
+        # tags are stored as strings (JSON in SQLite), not enum objects
+        tags_str = ','.join(ci.tags) if ci.tags else 'none'
+        data_str += f"- Date: {ci.completed_at.strftime('%Y-%m-%d')}, Mood: {ci.mood.value}, Stress: {ci.stress.value}, Sleep: {ci.sleep.value}, Tags: {tags_str}\n"
         
     prompt = f"""
     You are an empathetic, professional AI wellbeing assistant for university students.
@@ -30,7 +32,7 @@ def generate_insight_from_checkins(check_ins: List[CheckIn]) -> str:
     
     try:
         response = client.models.generate_content(
-            model='gemini-flash-latest',
+            model='gemini-2.5-flash',
             contents=prompt,
         )
         return response.text.strip().replace("\"", "")

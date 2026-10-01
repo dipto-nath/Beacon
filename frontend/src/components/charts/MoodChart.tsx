@@ -52,12 +52,12 @@ export function MoodChart({ data, showStress = false }: MoodChartProps) {
       <AreaChart data={data} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
         <defs>
           <linearGradient id="moodGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#1E3A5F" stopOpacity={0.12} />
-            <stop offset="95%" stopColor="#1E3A5F" stopOpacity={0} />
+            <stop offset="5%" stopColor="#3B7CE4" stopOpacity={0.18} />
+            <stop offset="95%" stopColor="#3B7CE4" stopOpacity={0} />
           </linearGradient>
           <linearGradient id="stressGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#B45309" stopOpacity={0.08} />
-            <stop offset="95%" stopColor="#B45309" stopOpacity={0} />
+            <stop offset="5%" stopColor="#D4820A" stopOpacity={0.1} />
+            <stop offset="95%" stopColor="#D4820A" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -78,21 +78,21 @@ export function MoodChart({ data, showStress = false }: MoodChartProps) {
         <Area
           type="monotone"
           dataKey="moodScore"
-          stroke="#1E3A5F"
-          strokeWidth={2}
+          stroke="#3B7CE4"
+          strokeWidth={2.5}
           fill="url(#moodGradient)"
-          dot={{ r: 3, fill: '#1E3A5F', strokeWidth: 0 }}
-          activeDot={{ r: 5, fill: '#1E3A5F', strokeWidth: 0 }}
+          dot={{ r: 3.5, fill: '#3B7CE4', strokeWidth: 0 }}
+          activeDot={{ r: 5.5, fill: '#3B7CE4', strokeWidth: 0 }}
         />
         {showStress && (
           <Area
             type="monotone"
             dataKey="stressScore"
-            stroke="#B45309"
+            stroke="#D4820A"
             strokeWidth={1.5}
             fill="url(#stressGradient)"
-            dot={{ r: 2.5, fill: '#B45309', strokeWidth: 0 }}
-            activeDot={{ r: 4.5, fill: '#B45309', strokeWidth: 0 }}
+            dot={{ r: 2.5, fill: '#D4820A', strokeWidth: 0 }}
+            activeDot={{ r: 4.5, fill: '#D4820A', strokeWidth: 0 }}
             strokeDasharray="4 2"
           />
         )}

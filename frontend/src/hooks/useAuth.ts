@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 
@@ -18,6 +18,10 @@ export function useAuth(options: UseAuthOptions = {}) {
   const [user, setUser] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  // Track the current token to detect stale responses
+  const currentTokenRef = useRef<string | null>(null);
+  // Track the verification request to allow cancellation
+  const verificationAbortRef = useRef<AbortController | null>(null);
 
   // Initialize user from localStorage after hydration to avoid mismatch
   useEffect(() => {
@@ -32,31 +36,60 @@ export function useAuth(options: UseAuthOptions = {}) {
   useEffect(() => {
     if (!mounted) return;
     
-    const verifyAuth = async () => {
-      const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('user');
-      
-      if (!token || !userData) return;
+    // Create new abort controller for this verification
+    const abortController = new AbortController();
+    verificationAbortRef.current = abortController;
+    
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    
+    // Store the token we're verifying against
+    currentTokenRef.current = token;
+    
+    if (!token || !userData) {
+      return;
+    }
 
+    const verifyAuth = async () => {
       try {
         const meResponse = await api.get('/auth/me', {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
+          // Pass abort signal for cancellation
+          signal: abortController.signal,
         });
+        
+        // Check if the token still matches the current token (not stale)
+        if (currentTokenRef.current !== token) {
+          // Token has changed - this is a stale response, ignore it
+          return;
+        }
+        
         const serverUser = meResponse.data;
         localStorage.setItem('user', JSON.stringify(serverUser));
         setUser(serverUser);
       } catch (error: any) {
-        // Only clear auth on explicit 401 - don't clear on network errors
-        if (error.response?.status === 401) {
+        // Check if the token still matches (ignore stale responses)
+        if (currentTokenRef.current !== token) {
+          return;
+        }
+        
+        // Only clear auth on explicit 401 - don't clear on network errors or abort
+        if (error.response?.status === 401 && !abortController.signal.aborted) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           setUser(null);
         }
-        // For other errors (network, 500, etc), keep using cached user
+        // For other errors (network, 500, abort), keep using cached user
       }
     };
 
     verifyAuth();
+
+    // Cleanup: cancel pending verification
+    return () => {
+      abortController.abort();
+      verificationAbortRef.current = null;
+    };
   }, [mounted]);
 
   // Handle auth redirects after mount
@@ -103,6 +136,13 @@ export function useAuth(options: UseAuthOptions = {}) {
   };
 
   const logout = () => {
+    // Cancel any pending verification
+    if (verificationAbortRef.current) {
+      verificationAbortRef.current.abort();
+    }
+    // Clear the current token ref to invalidate any in-flight requests
+    currentTokenRef.current = null;
+    
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);

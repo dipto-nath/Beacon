@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_session
 from app.core.permissions import require_permission, Permission, require_role, Role
 from app.core.privacy import add_privacy_metadata, K_ANONYMITY_THRESHOLD
-from app.models.check_in import CheckIn
+from app.models.check_in import CheckIn, MoodLevel, StressLevel
 from app.models.counseling import CounselingRequest
 from app.models.support_case import SupportCase, CaseStatus, CasePriority
 from app.models.resource import Resource
@@ -95,21 +95,97 @@ async def get_analytics_overview(
         TopFactorItem(factor="loneliness", count=109),
     ]
 
-    trends_data = [
-        TrendsDataPoint(
-            date=start_date + timedelta(days=i),
-            check_ins=0,
-            avg_mood=0,
-            stress_avg=0,
-            counseling_requests=0,
+    # Calculate date range for trends
+    end_dt = datetime.combine(today, datetime.max.time())
+    days_in_period = (end_dt - start_dt).days + 1
+    trend_days = min(days_in_period, 30)  # Limit to 30 data points
+
+    # Aggregate trends by date from actual records
+    trends_data = []
+    has_trend_data = False
+
+    if trend_days > 0:
+        # Get check-ins aggregated by date
+        checkin_trends_result = await session.execute(
+            select(
+                func.date(CheckIn.completed_at).label("checkin_date"),
+                func.count(CheckIn.id).label("checkin_count"),
+                func.avg(
+                    func.case(
+                        (CheckIn.mood == MoodLevel.VERY_GOOD, 5),
+                        (CheckIn.mood == MoodLevel.GOOD, 4),
+                        (CheckIn.mood == MoodLevel.OKAY, 3),
+                        (CheckIn.mood == MoodLevel.DIFFICULT, 2),
+                        (CheckIn.mood == MoodLevel.VERY_DIFFICULT, 1),
+                        else_=3,
+                    )
+                ).label("avg_mood"),
+                func.avg(
+                    func.case(
+                        (CheckIn.stress == StressLevel.LOW, 1),
+                        (CheckIn.stress == StressLevel.MODERATE, 2),
+                        (CheckIn.stress == StressLevel.ELEVATED, 3),
+                        (CheckIn.stress == StressLevel.HIGH, 4),
+                        else_=2,
+                    )
+                ).label("avg_stress"),
+            )
+            .where(CheckIn.completed_at >= start_dt, CheckIn.completed_at <= end_dt)
+            .group_by(func.date(CheckIn.completed_at))
+            .order_by(func.date(CheckIn.completed_at))
         )
-        for i in range(30)
-    ]
+        checkin_trends = {row.checkin_date: row for row in checkin_trends_result}
+
+        # Get counseling requests aggregated by date
+        counseling_trends_result = await session.execute(
+            select(
+                func.date(CounselingRequest.requested_at).label("request_date"),
+                func.count(CounselingRequest.id).label("counseling_count"),
+            )
+            .where(CounselingRequest.requested_at >= start_dt, CounselingRequest.requested_at <= end_dt)
+            .group_by(func.date(CounselingRequest.requested_at))
+            .order_by(func.date(CounselingRequest.requested_at))
+        )
+        counseling_trends = {row.request_date: row.counseling_count for row in counseling_trends_result}
+
+        # Build trend data points for each day in the period
+        for i in range(trend_days):
+            current_date = start_date + timedelta(days=i)
+            checkin_data = checkin_trends.get(current_date)
+            counseling_count = counseling_trends.get(current_date, 0)
+
+            if checkin_data:
+                has_trend_data = True
+                trends_data.append(
+                    TrendsDataPoint(
+                        date=current_date,
+                        check_ins=checkin_data.checkin_count or 0,
+                        avg_mood=round(float(checkin_data.avg_mood), 2) if checkin_data.avg_mood else 0.0,
+                        stress_avg=round(float(checkin_data.avg_stress), 2) if checkin_data.avg_stress else 0.0,
+                        counseling_requests=counseling_count,
+                    )
+                )
+            else:
+                # No data for this date - include point with zeros but mark as no data
+                trends_data.append(
+                    TrendsDataPoint(
+                        date=current_date,
+                        check_ins=0,
+                        avg_mood=0.0,
+                        stress_avg=0.0,
+                        counseling_requests=counseling_count,
+                    )
+                )
+
+    # If no trend data available at all, return empty list with unavailable indicator
+    if not has_trend_data and trend_days > 0:
+        trends_data = []
 
     privacy_meta = {
         "note": "Results based on aggregated data. Individual students are not identifiable.",
         "min_group_size": K_ANONYMITY_THRESHOLD,
         "suppressed_cohorts": 0,
+        "trends_available": has_trend_data,
     }
 
     return AnalyticsOverviewResponse(

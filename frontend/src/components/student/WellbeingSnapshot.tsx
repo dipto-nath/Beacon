@@ -59,28 +59,30 @@ export function WellbeingSnapshotCard({ snapshot }: WellbeingSnapshotCardProps) 
 
   return (
     <section
-      className="bg-white border border-[var(--border)] rounded-xl p-5"
+      className="beacon-card"
       aria-label="Your recent well-being"
     >
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Your recent well-being</h2>
+          <h2 className="text-[15px] font-semibold text-[var(--text-primary)] tracking-tight">
+            Your recent well-being
+          </h2>
           <p className="text-xs text-[var(--text-muted)] mt-0.5">Based on your last 7 check-ins</p>
         </div>
         <div
-          className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border"
+          className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full border"
           style={{
             color: trendColor(snapshot.moodTrend),
             background: snapshot.moodTrend === 'improving'
-              ? '#F0F7F2'
+              ? 'rgba(39,181,160,0.08)'
               : snapshot.moodTrend === 'declining'
-              ? '#FEF2F2'
-              : '#F4F4F2',
+              ? 'rgba(224,82,82,0.08)'
+              : 'rgba(100,120,160,0.07)',
             borderColor: snapshot.moodTrend === 'improving'
-              ? '#C6DFCC'
+              ? 'rgba(39,181,160,0.25)'
               : snapshot.moodTrend === 'declining'
-              ? '#FCA5A5'
-              : '#E4E4E2',
+              ? 'rgba(224,82,82,0.2)'
+              : 'var(--border)',
           }}
         >
           <span aria-hidden="true">{trendIcon(snapshot.moodTrend)}</span>
@@ -93,11 +95,13 @@ export function WellbeingSnapshotCard({ snapshot }: WellbeingSnapshotCardProps) 
           <div
             key={m.label}
             className={cn(
-              'rounded-lg border px-3 py-2.5 text-center',
+              'rounded-[var(--radius)] border px-3 py-3 text-center',
               m.className
             )}
           >
-            <p className="text-[10px] font-medium uppercase tracking-wider opacity-60 mb-0.5">{m.label}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider opacity-50 mb-0.5">
+              {m.label}
+            </p>
             <p className="text-[13px] font-semibold">{m.value}</p>
           </div>
         ))}

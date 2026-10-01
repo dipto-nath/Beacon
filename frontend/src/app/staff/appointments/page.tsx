@@ -1,8 +1,9 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { AppLayout } from '@/components/shared/AppLayout';
 import { useAuth } from '@/hooks/useAuth';
+import { queryKeys } from '@/app/providers';
 import api from '@/lib/api';
 
 export default function StaffAppointmentsPage() {
@@ -12,19 +13,39 @@ export default function StaffAppointmentsPage() {
     redirectTo: '/login'
   });
 
+  // Fetch appointments with infinite query for pagination
+  const {
+    data: appointmentsData,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: queryKeys.staffAppointments(user?.id),
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await api.get('/appointments', {
+        params: { page: pageParam, page_size: 20 },
+      });
+      return res.data;
+    },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.has_more) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    enabled: !!user && user.role === 'counselor',
+    initialPageParam: 1,
+  });
+
   // Don't render until mounted to avoid hydration mismatch
   if (!mounted) {
     return null;
   }
 
-  const { data: appointmentsData, isLoading } = useQuery({
-    queryKey: ['staffAppointments'],
-    queryFn: async () => {
-      const res = await api.get('/appointments');
-      return res.data;
-    },
-    enabled: !!user && user.role === 'counselor',
-  });
+  // Flatten all pages into a single array
+  const appointments = appointmentsData?.pages.flatMap((page) => page.data) || [];
 
   if (isLoading) {
     return (
@@ -34,7 +55,18 @@ export default function StaffAppointmentsPage() {
     );
   }
 
-  const appointments = appointmentsData?.data || [];
+  if (isError) {
+    return (
+      <AppLayout variant="staff">
+        <div className="max-w-4xl space-y-6 p-8">
+          <div className="text-center text-red-600">
+            <p className="text-lg font-medium">Failed to load appointments</p>
+            <p className="text-sm text-gray-500 mt-2">Please try again later</p>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout variant="staff">
@@ -89,6 +121,19 @@ export default function StaffAppointmentsPage() {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Load more button */}
+          {hasNextPage && (
+            <div className="px-5 py-4 border-t border-[var(--border)]">
+              <button
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="w-full text-[13px] font-medium text-white bg-[var(--primary)] px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors disabled:opacity-50"
+              >
+                {isFetchingNextPage ? 'Loading more...' : 'Load more appointments'}
+              </button>
             </div>
           )}
         </section>

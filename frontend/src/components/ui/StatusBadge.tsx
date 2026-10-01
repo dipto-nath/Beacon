@@ -2,7 +2,14 @@
 
 import { cn } from '@/lib/utils';
 import type { CaseStatus, CasePriority, SupportLevel } from '@/types';
-import { caseStatusClass, caseStatusLabel, casePriorityClass, casePriorityLabel, supportLevelClass, supportLevelLabel } from '@/lib/utils';
+import {
+  caseStatusClass,
+  caseStatusLabel,
+  casePriorityClass,
+  casePriorityLabel,
+  supportLevelClass,
+  supportLevelLabel,
+} from '@/lib/utils';
 
 interface StatusBadgeProps {
   status: CaseStatus;
@@ -13,7 +20,7 @@ export function CaseStatusBadge({ status, className }: StatusBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center text-xs font-medium px-2 py-0.5 rounded',
+        'inline-flex items-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full',
         caseStatusClass(status),
         className
       )}
@@ -32,7 +39,7 @@ export function PriorityBadge({ priority, className }: PriorityBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center text-xs font-medium px-2 py-0.5 rounded',
+        'inline-flex items-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full',
         casePriorityClass(priority),
         className
       )}
@@ -51,7 +58,7 @@ export function SupportLevelBadge({ level, className }: SupportLevelBadgeProps) 
   return (
     <span
       className={cn(
-        'inline-flex items-center text-xs font-medium px-2.5 py-1 rounded border',
+        'inline-flex items-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full border',
         supportLevelClass(level),
         className
       )}
