@@ -166,10 +166,10 @@ export interface CampusAnalytics {
   topFactors: { factor: CheckInTag; count: number }[];
   trendsData: {
     date: string;
-    checkIns: number;
-    avgMood: number;
-    stressAvg: number;
-    counselingRequests: number;
+    check_ins: number;
+    avg_mood: number;
+    stress_avg: number;
+    counseling_requests: number;
   }[];
 }
 

@@ -19,15 +19,15 @@ import type { CampusAnalytics } from '@/types';
 import { tagLabel } from '@/lib/utils';
 
 interface TrendChartProps {
-  data: CampusAnalytics['trendsData'];
-  metric: 'checkIns' | 'avgMood' | 'stressAvg' | 'counselingRequests';
+  data: any[];
+  metric: 'check_ins' | 'avg_mood' | 'stress_avg' | 'counseling_requests';
 }
 
 const metricConfig = {
-  checkIns: { label: 'Check-ins', color: '#1E3A5F' },
-  avgMood: { label: 'Average mood', color: '#0D9488' },
-  stressAvg: { label: 'Stress level', color: '#B45309' },
-  counselingRequests: { label: 'Counseling requests', color: '#4D7C5E' },
+  check_ins: { label: 'Check-ins', color: '#1E3A5F' },
+  avg_mood: { label: 'Average mood', color: '#0D9488' },
+  stress_avg: { label: 'Stress level', color: '#B45309' },
+  counseling_requests: { label: 'Counseling requests', color: '#4D7C5E' },
 };
 
 function CustomTooltip({ active, payload, label }: {

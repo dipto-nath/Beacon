@@ -4,24 +4,20 @@ import { AppLayout } from '@/components/shared/AppLayout';
 import { MetricCard } from '@/components/ui/Card';
 import { SupportQueue } from '@/components/staff/SupportQueue';
 import { StressDistributionChart, TrendAreaChart } from '@/components/charts/StaffCharts';
+import { MorphingSquare } from '@/components/ui/morphing-square';
 import { Info } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
 export default function StaffOverviewPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && (!user || (user.role !== 'counselor' && user.role !== 'wellbeing_admin'))) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
+  const { user, mounted } = useAuth({
+    requireAuth: true,
+    allowedRoles: ['counselor', 'wellbeing_admin'],
+    redirectTo: '/login'
+  });
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['staffAnalytics'],
@@ -41,8 +37,20 @@ export default function StaffOverviewPage() {
     enabled: !!user,
   });
 
-  if (loading || analyticsLoading || queueLoading) {
-    return <div className="p-8">Loading...</div>;
+  // Don't render until mounted to avoid hydration mismatch
+  if (!mounted) {
+    return null;
+  }
+
+  if (analyticsLoading || queueLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white px-4">
+        <div className="text-center">
+          <MorphingSquare message="Loading staff dashboard..." messagePlacement="bottom" />
+          <p className="mt-6 text-sm text-gray-500 font-medium">Please wait while we fetch your analytics</p>
+        </div>
+      </div>
+    );
   }
 
   if (!analytics) return null;
@@ -127,7 +135,7 @@ export default function StaffOverviewPage() {
             <h2 className="text-[14px] font-semibold text-[var(--text-primary)] mb-3">
               Check-ins over time
             </h2>
-            <TrendAreaChart data={a.trends.data} metric="checkIns" />
+            <TrendAreaChart data={a.trends.data} metric="check_ins" />
           </section>
 
           {/* Stress distribution */}

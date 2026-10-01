@@ -6,8 +6,6 @@ import { Info } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
 const statusGroups = [
   { label: 'Urgent', statuses: ['new', 'reviewing', 'contacted'] as const, description: 'Requires attention' },
@@ -16,14 +14,13 @@ const statusGroups = [
 ];
 
 export default function StaffSupportPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+  const { user, mounted } = useAuth({
+    requireAuth: true,
+    allowedRoles: ['counselor', 'wellbeing_admin'],
+    redirectTo: '/login'
+  });
 
-  useEffect(() => {
-    if (!loading && (!user || (user.role !== 'counselor' && user.role !== 'wellbeing_admin'))) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
+
 
   const { data: queueData, isLoading: queueLoading } = useQuery({
     queryKey: ['staffCases'],
@@ -34,7 +31,12 @@ export default function StaffSupportPage() {
     enabled: !!user,
   });
 
-  if (loading || queueLoading) {
+  // Don't render until mounted to avoid hydration mismatch
+  if (!mounted) {
+    return null;
+  }
+
+  if (queueLoading) {
     return (
       <AppLayout variant="staff">
         <div className="p-8">Loading...</div>

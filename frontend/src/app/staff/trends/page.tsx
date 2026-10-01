@@ -34,7 +34,7 @@ export default function StaffTrendsPage() {
           >
             <h2 className="text-[14px] font-semibold text-[var(--text-primary)] mb-1">Check-in volume</h2>
             <p className="text-[11px] text-[var(--text-muted)] mb-3">Daily check-ins across campus</p>
-            <TrendAreaChart data={a.trendsData} metric="checkIns" />
+            <TrendAreaChart data={a.trendsData} metric="check_ins" />
           </section>
 
           <section
@@ -43,7 +43,7 @@ export default function StaffTrendsPage() {
           >
             <h2 className="text-[14px] font-semibold text-[var(--text-primary)] mb-1">Average reported mood</h2>
             <p className="text-[11px] text-[var(--text-muted)] mb-3">Scale: 1 (very difficult) to 5 (very good)</p>
-            <TrendAreaChart data={a.trendsData} metric="avgMood" />
+            <TrendAreaChart data={a.trendsData} metric="avg_mood" />
           </section>
 
           <section
@@ -52,7 +52,7 @@ export default function StaffTrendsPage() {
           >
             <h2 className="text-[14px] font-semibold text-[var(--text-primary)] mb-1">Average stress level</h2>
             <p className="text-[11px] text-[var(--text-muted)] mb-3">Scale: 1 (low) to 4 (high)</p>
-            <TrendAreaChart data={a.trendsData} metric="stressAvg" />
+            <TrendAreaChart data={a.trendsData} metric="stress_avg" />
           </section>
 
           <section
@@ -61,7 +61,7 @@ export default function StaffTrendsPage() {
           >
             <h2 className="text-[14px] font-semibold text-[var(--text-primary)] mb-1">Counseling requests</h2>
             <p className="text-[11px] text-[var(--text-muted)] mb-3">Support demand over time</p>
-            <TrendAreaChart data={a.trendsData} metric="counselingRequests" />
+            <TrendAreaChart data={a.trendsData} metric="counseling_requests" />
           </section>
         </div>
 

@@ -65,6 +65,8 @@ ROLE_PERMISSIONS: Dict[Role, Set[Permission]] = {
         Permission.VIEW_ASSIGNED_CASES, Permission.UPDATE_CASE_STATUS, Permission.ADD_CASE_NOTES,
         Permission.VIEW_OWN_APPOINTMENTS, Permission.UPDATE_OWN_APPOINTMENTS,
         Permission.VIEW_COUNSELING_REQUESTS, Permission.ASSIGN_COUNSELING_REQUEST,
+        Permission.VIEW_ALL_CASES, Permission.VIEW_CAMPUS_ANALYTICS, Permission.VIEW_TRENDS,
+        Permission.VIEW_STRESS_DISTRIBUTION, Permission.VIEW_TOP_FACTORS,
     },
     Role.WELLBEING_ADMIN: {
         Permission.VIEW_CAMPUS_ANALYTICS, Permission.VIEW_TRENDS, Permission.VIEW_STRESS_DISTRIBUTION,

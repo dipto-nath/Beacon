@@ -17,6 +17,7 @@ import {
   Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 interface NavItem {
   label: string;
@@ -48,7 +49,15 @@ interface SidebarProps {
 
 export function Sidebar({ variant = 'student' }: SidebarProps) {
   const pathname = usePathname();
+  const { user, mounted } = useAuth();
   const isStaff = variant === 'staff';
+  
+  // Don't render user-dependent content until mounted to avoid hydration mismatch
+  if (!mounted) {
+    return <aside className="beacon-sidebar" aria-label="Main navigation" />;
+  }
+
+  const canViewStaffPortal = user?.role === 'counselor' || user?.role === 'wellbeing_admin' || user?.role === 'admin';
 
   const mainNav = isStaff
     ? [
@@ -122,7 +131,7 @@ export function Sidebar({ variant = 'student' }: SidebarProps) {
         </ul>
 
         {/* Staff switcher */}
-        {!isStaff && (
+        {!isStaff && canViewStaffPortal && (
           <div className="mt-6 pt-4 border-t border-[var(--border)]">
             <p className="text-[10px] text-[var(--text-muted)] font-medium uppercase tracking-wider px-3 mb-1.5">
               Portals
@@ -136,7 +145,7 @@ export function Sidebar({ variant = 'student' }: SidebarProps) {
             </Link>
           </div>
         )}
-        {isStaff && (
+        {isStaff && canViewStaffPortal && (
           <div className="mt-6 pt-4 border-t border-[var(--border)]">
             <Link
               href="/"

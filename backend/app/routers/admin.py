@@ -13,7 +13,7 @@ from app.core.permissions import require_role, Role
 from app.models.user import User, UserRole
 from app.schemas.auth import UserResponse
 
-router = APIRouter(prefix="/admin")
+router = APIRouter()
 
 
 @router.get("/users", response_model=List[UserResponse])

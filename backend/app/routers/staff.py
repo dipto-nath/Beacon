@@ -34,7 +34,7 @@ from app.schemas.support_case import (
     SupportCaseDetailResponse,
 )
 
-router = APIRouter(prefix="/staff")
+router = APIRouter()
 
 
 # ─── Analytics (wellbeing_admin only) ────────────────────────────
@@ -42,7 +42,7 @@ router = APIRouter(prefix="/staff")
 @router.get("/analytics/overview", response_model=AnalyticsOverviewResponse)
 async def get_analytics_overview(
     period: str = Query("current_month", pattern="^(current_month|last_month|current_week|last_week|semester)$"),
-    current_user=Depends(require_role(Role.WELLBEING_ADMIN, Role.ADMIN)),
+    current_user=Depends(require_role(Role.WELLBEING_ADMIN, Role.ADMIN, Role.COUNSELOR)),
     session: AsyncSession = Depends(get_session),
 ):
     """Get campus analytics overview with privacy-preserving aggregation."""
@@ -98,10 +98,10 @@ async def get_analytics_overview(
     trends_data = [
         TrendsDataPoint(
             date=start_date + timedelta(days=i),
-            checkIns=0,
-            avgMood=0,
-            stressAvg=0,
-            counselingRequests=0,
+            check_ins=0,
+            avg_mood=0,
+            stress_avg=0,
+            counseling_requests=0,
         )
         for i in range(30)
     ]
@@ -135,7 +135,7 @@ async def get_analytics_overview(
 @router.get("/analytics/trends", response_model=TrendsResponse)
 async def get_analytics_trends(
     period: str = Query("30d", pattern="^(7d|30d|90d|semester)$"),
-    current_user=Depends(require_role(Role.WELLBEING_ADMIN, Role.ADMIN)),
+    current_user=Depends(require_role(Role.WELLBEING_ADMIN, Role.ADMIN, Role.COUNSELOR)),
     session: AsyncSession = Depends(get_session),
 ):
     """Get time-series trends."""
@@ -150,7 +150,7 @@ async def get_analytics_trends(
 
 @router.get("/analytics/factors", response_model=TopFactorsResponse)
 async def get_analytics_factors(
-    current_user=Depends(require_role(Role.WELLBEING_ADMIN, Role.ADMIN)),
+    current_user=Depends(require_role(Role.WELLBEING_ADMIN, Role.ADMIN, Role.COUNSELOR)),
     session: AsyncSession = Depends(get_session),
 ):
     """Get top reported factors."""
@@ -166,7 +166,7 @@ async def get_analytics_factors(
 
 @router.get("/analytics/stress-distribution", response_model=StressDistributionResponse)
 async def get_stress_distribution(
-    current_user=Depends(require_role(Role.WELLBEING_ADMIN, Role.ADMIN)),
+    current_user=Depends(require_role(Role.WELLBEING_ADMIN, Role.ADMIN, Role.COUNSELOR)),
     session: AsyncSession = Depends(get_session),
 ):
     """Get stress level breakdown."""

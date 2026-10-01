@@ -1,21 +1,21 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { AppLayout } from '@/components/shared/AppLayout';
 import { useAuth } from '@/hooks/useAuth';
 import api from '@/lib/api';
 
 export default function StaffAppointmentsPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+  const { user, mounted } = useAuth({
+    requireAuth: true,
+    allowedRoles: ['counselor', 'wellbeing_admin'],
+    redirectTo: '/login'
+  });
 
-  useEffect(() => {
-    if (!loading && (!user || (user.role !== 'counselor' && user.role !== 'wellbeing_admin'))) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
+  // Don't render until mounted to avoid hydration mismatch
+  if (!mounted) {
+    return null;
+  }
 
   const { data: appointmentsData, isLoading } = useQuery({
     queryKey: ['staffAppointments'],
@@ -26,7 +26,7 @@ export default function StaffAppointmentsPage() {
     enabled: !!user && user.role === 'counselor',
   });
 
-  if (loading || isLoading) {
+  if (isLoading) {
     return (
       <AppLayout variant="staff">
         <div className="p-8">Loading appointments...</div>

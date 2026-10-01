@@ -17,8 +17,13 @@ import api from '@/lib/api';
 import type { MoodLevel, CheckInTag } from '@/types';
 
 export default function HomePage() {
-  const { user, loading } = useAuth();
+  const { user, mounted } = useAuth({
+    requireAuth: true,
+    redirectTo: '/login'
+  });
   const greeting = getGreeting();
+
+
 
   const { data: snapshotData } = useQuery({
     queryKey: ['wellbeingSnapshot'],
@@ -72,13 +77,19 @@ export default function HomePage() {
 
   const router = useRouter();
 
+  // Redirect staff users to staff portal
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
+    if (user && (user.role === 'counselor' || user.role === 'wellbeing_admin' || user.role === 'admin')) {
+      router.push('/staff');
     }
-  }, [loading, user, router]);
+  }, [user, router]);
 
-  if (loading || !user) {
+  // Don't render until mounted to avoid hydration mismatch
+  if (!mounted) {
+    return null;
+  }
+
+  if (!user) {
     return <div className="p-8">Loading...</div>;
   }
 
