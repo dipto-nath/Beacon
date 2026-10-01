@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { AppLayout } from '@/components/shared/AppLayout';
 import { CheckInFlow } from '@/components/student/CheckInFlow';
@@ -37,9 +38,23 @@ export default function HomePage() {
     enabled: !!user,
   });
 
+  const { data: insightData, isLoading: insightLoading } = useQuery({
+    queryKey: ['insight'],
+    queryFn: async () => {
+      const res = await api.get('/check-ins/insight');
+      return res.data;
+    },
+    enabled: !!user,
+  });
+
+  const [justCheckedIn, setJustCheckedIn] = useState(false);
+
   const submitCheckIn = useMutation({
     mutationFn: async (data: any) => {
       return await api.post('/check-ins', data);
+    },
+    onSuccess: () => {
+      setJustCheckedIn(true);
     }
   });
 
@@ -55,12 +70,22 @@ export default function HomePage() {
     });
   };
 
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [loading, user, router]);
+
   if (loading || !user) {
     return <div className="p-8">Loading...</div>;
   }
 
   const snapshot = snapshotData || { streak_days: 0 };
   const topRecs = (recsData || []).slice(0, 2);
+
+  const hasCheckedInToday = justCheckedIn || (snapshotData?.last_check_in_date && new Date(snapshotData.last_check_in_date).toDateString() === new Date().toDateString());
 
   return (
     <AppLayout>
@@ -84,16 +109,29 @@ export default function HomePage() {
           </div>
         )}
 
-        <section aria-label="Today's check-in">
-          <CheckInFlow onComplete={handleCheckInComplete} />
-        </section>
+        {!hasCheckedInToday ? (
+          <section aria-label="Today's check-in">
+            <CheckInFlow onComplete={handleCheckInComplete} />
+          </section>
+        ) : (
+          <section className="bg-white border border-[var(--border)] rounded-xl p-6 text-center" aria-live="polite">
+            <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-[#F0FDFA] border-2 border-[#99F6E4] text-[#0D9488]">
+               ✓
+            </div>
+            <h2 className="text-[15px] font-semibold text-[var(--text-primary)] mb-1">Check-in complete</h2>
+            <p className="text-[13px] text-[var(--text-muted)] leading-relaxed max-w-xs mx-auto">
+              Thank you for checking in today. Your responses are private and help you understand your patterns over time.
+            </p>
+          </section>
+        )}
 
         {/* Note: In a real app we'd map snapshot data properly to WellbeingSnapshotCard, for now omitting if missing full data */}
         
-        <AIInsight>
-          Your stress has been higher on days with heavier academic workload. Your mood tends to be more
-          stable on days when you reported adequate sleep.
-        </AIInsight>
+        {insightLoading ? (
+          <AIInsight>Generating your personalized insight...</AIInsight>
+        ) : insightData?.insight ? (
+          <AIInsight>{insightData.insight}</AIInsight>
+        ) : null}
 
         {topRecs.length > 0 && (
           <section aria-label="Suggested for you">

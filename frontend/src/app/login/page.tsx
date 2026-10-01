@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
+import { DotPattern } from '@/components/ui/dot-pattern';
+import { cn } from '@/lib/utils';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('d.nath@ashford.ac.uk');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -26,8 +28,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+    <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-gray-50">
+      <DotPattern
+        className={cn(
+          "[mask-image:radial-gradient(800px_circle_at_center,white,transparent)]",
+        )}
+      />
+      <div className="z-10 w-full max-w-md bg-white rounded-xl shadow-lg p-8 relative">
         <h1 className="text-2xl font-bold text-center mb-6">Beacon Login</h1>
         
         {error && (
@@ -63,7 +70,7 @@ export default function LoginPage() {
         </form>
         
         <div className="mt-6 text-sm text-center text-gray-500">
-          <p>Demo Accounts:</p>
+          <p>Demo Accounts (Password: <strong>password123</strong>):</p>
           <ul className="mt-2 space-y-1">
             <li>Student: d.nath@ashford.ac.uk</li>
             <li>Counselor: s.okafor@ashford.ac.uk</li>

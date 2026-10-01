@@ -46,7 +46,7 @@ class UserBase(BaseModel):
     email: EmailStr
     first_name: str
     last_name: str
-    student_id: str
+    student_id: Optional[str] = None
     program: Optional[str] = None
     year_of_study: Optional[int] = None
     role: str

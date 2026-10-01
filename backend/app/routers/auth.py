@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status, Header
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -48,7 +48,7 @@ router = APIRouter()
 
 async def get_current_user(
     session: AsyncSession = Depends(get_session),
-    authorization: Optional[str] = None,
+    authorization: Optional[str] = Header(None),
 ) -> User:
     """Get current authenticated user from access token."""
     if not authorization or not authorization.startswith("Bearer "):
@@ -78,7 +78,7 @@ async def get_current_user(
 
 async def get_current_user_optional(
     session: AsyncSession = Depends(get_session),
-    authorization: Optional[str] = None,
+    authorization: Optional[str] = Header(None),
 ) -> Optional[User]:
     """Get current user if authenticated, otherwise return None."""
     try:
@@ -238,7 +238,7 @@ async def refresh_token(
 @router.post("/logout")
 async def logout(
     response: Response,
-    authorization: Optional[str] = None,
+    authorization: Optional[str] = Header(None),
 ):
     """Logout - blacklist access token and clear refresh token cookie."""
     if authorization and authorization.startswith("Bearer "):

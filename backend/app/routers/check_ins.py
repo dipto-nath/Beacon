@@ -19,9 +19,29 @@ from app.schemas.check_in import (
     CheckInResponse,
     CheckInListResponse,
     CheckInStreakResponse,
+    CheckInInsightResponse,
 )
+from app.services.ai import generate_insight_from_checkins
 
 router = APIRouter()
+
+
+@router.get("/insight", response_model=CheckInInsightResponse)
+async def get_insight(
+    current_user=Depends(require_permission(Permission.VIEW_OWN_CHECK_INS)),
+    session: AsyncSession = Depends(get_session),
+):
+    """Get AI-generated insight based on recent check-ins."""
+    result = await session.execute(
+        select(CheckIn)
+        .where(CheckIn.student_id == current_user.id)
+        .order_by(CheckIn.completed_at.desc())
+        .limit(7)
+    )
+    check_ins = list(result.scalars().all())
+    
+    insight_text = generate_insight_from_checkins(check_ins)
+    return CheckInInsightResponse(insight=insight_text)
 
 
 @router.post("", response_model=CheckInResponse, status_code=status.HTTP_201_CREATED)

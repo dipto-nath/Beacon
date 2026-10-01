@@ -58,3 +58,7 @@ class CheckInStreakResponse(BaseModel):
 class CheckInInternalResponse(CheckInResponse):
     distress_score: Optional[float] = None
     escalation_reason: Optional[str] = None
+
+
+class CheckInInsightResponse(BaseModel):
+    insight: str

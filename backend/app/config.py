@@ -64,9 +64,10 @@ class Settings(BaseSettings):
             raise ValueError("FIELD_ENCRYPTION_KEY must be base64-encoded 32 bytes")
         return v
 
-    # ─── OpenAI ───────────────────────────────────────────────────
+    # ─── LLM Configuration ────────────────────────────────────────
     OPENAI_API_KEY: Optional[str] = None
     OPENAI_MODEL: str = "gpt-4o"
+    GEMINI_API_KEY: Optional[str] = None
 
     # ─── Email (SendGrid) ─────────────────────────────────────────
     SENDGRID_API_KEY: Optional[str] = None

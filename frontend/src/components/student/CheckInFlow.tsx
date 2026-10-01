@@ -6,19 +6,19 @@ import { Button } from '@/components/ui/Button';
 import type { MoodLevel, CheckInTag } from '@/types';
 
 const moodOptions: { value: MoodLevel; label: string; symbol: string }[] = [
-  { value: 'very_difficult', label: 'Very difficult', symbol: '◾' },
-  { value: 'difficult', label: 'Difficult', symbol: '◽' },
-  { value: 'okay', label: 'Okay', symbol: '○' },
-  { value: 'good', label: 'Good', symbol: '●' },
-  { value: 'very_good', label: 'Very good', symbol: '◉' },
+  { value: 'very_difficult', label: 'Very difficult', symbol: '😩' },
+  { value: 'difficult', label: 'Difficult', symbol: '😕' },
+  { value: 'okay', label: 'Okay', symbol: '😐' },
+  { value: 'good', label: 'Good', symbol: '🙂' },
+  { value: 'very_good', label: 'Very good', symbol: '😄' },
 ];
 
 const moodColors: Record<MoodLevel, { border: string; bg: string; text: string; dot: string }> = {
-  very_difficult: { border: '#FCA5A5', bg: '#FEF2F2', text: '#B91C1C', dot: '#B91C1C' },
-  difficult: { border: '#FDBA74', bg: '#FFF7ED', text: '#C2410C', dot: '#C2410C' },
-  okay: { border: '#FDE68A', bg: '#FFFBEB', text: '#B45309', dot: '#B45309' },
-  good: { border: '#A7F3D0', bg: '#F0FDF4', text: '#047857', dot: '#047857' },
-  very_good: { border: '#99F6E4', bg: '#F0FDFA', text: '#0D9488', dot: '#0D9488' },
+  very_difficult: { border: '#F87171', bg: '#FEF2F2', text: '#991B1B', dot: '#991B1B' }, // Deeper shade (Red)
+  difficult: { border: '#FDE68A', bg: '#FFFBEB', text: '#B45309', dot: '#B45309' }, // Amber
+  okay: { border: '#FDE68A', bg: '#FFFBEB', text: '#B45309', dot: '#B45309' }, // Amber
+  good: { border: '#FDE68A', bg: '#FFFBEB', text: '#B45309', dot: '#B45309' }, // Amber
+  very_good: { border: '#86EFAC', bg: '#F0FDF4', text: '#166534', dot: '#166534' }, // Green
 };
 
 const tags: CheckInTag[] = [

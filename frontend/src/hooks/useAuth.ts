@@ -21,12 +21,8 @@ export function useAuth() {
   const login = async (email: string, password: string = 'password123') => {
     try {
       const response = await api.post('/auth/login', {
-        username: email, // FastAPI OAuth2PasswordRequestForm uses 'username'
+        email: email,
         password: password,
-      }, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
       });
       const data = response.data;
       localStorage.setItem('token', data.access_token);

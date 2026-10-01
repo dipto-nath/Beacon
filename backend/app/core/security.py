@@ -81,9 +81,11 @@ def verify_token_type(token: str, expected_type: str) -> bool:
 _redis_client: Optional[Redis] = None
 
 
-async def get_redis() -> Redis:
-    """Get Redis client for token blacklist."""
+async def get_redis():
+    """Get Redis client for token blacklist if URL is provided."""
     global _redis_client
+    if not settings.REDIS_URL:
+        return None
     if _redis_client is None:
         _redis_client = Redis.from_url(
             settings.REDIS_URL,
@@ -99,6 +101,9 @@ async def blacklist_token(token: str, expires_in: Optional[int] = None) -> None:
     Token expires automatically based on its JWT exp claim.
     """
     redis = await get_redis()
+    if not redis:
+        return
+    
     payload = decode_token(token)
     if not payload:
         return
@@ -113,6 +118,9 @@ async def blacklist_token(token: str, expires_in: Optional[int] = None) -> None:
 async def is_token_blacklisted(token: str) -> bool:
     """Check if token is in blacklist."""
     redis = await get_redis()
+    if not redis:
+        return False
+        
     result = await redis.get(f"blacklist:{token}")
     return result is not None
 
